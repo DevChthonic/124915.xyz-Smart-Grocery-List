@@ -6,14 +6,28 @@
  */
 
 // --- I. STATE & CONFIGURATION ---
+
 const GROCERY_DATA = {
-    "Produce": { "pr-a": "Apples", "pr-b": "Bananas", "pr-c": "Carrots", "pr-d": "Broccoli", "pr-e": "Spinach", "pr-f": "Onions", "pr-g": "Potatoes", "pr-h": "Tomatoes", "pr-i": "Lettuce", "pr-j": "Cucumbers", "pr-k": "Bell Peppers", "pr-l": "Avocado", "pr-m": "Garlic" },
-    "Dairy & Eggs": { "da-a": "Milk", "da-b": "Eggs", "da-c": "Cheddar Cheese", "da-d": "Mozzarella Cheese", "da-e": "Yogurt", "da-f": "Butter", "da-g": "Sour Cream", "da-h": "Cream Cheese" },
-    "Meat & Seafood": { "ms-a": "Chicken Breast", "ms-b": "Ground Beef", "ms-c": "Bacon", "ms-d": "Sausage", "ms-e": "Salmon", "ms-f": "Shrimp", "ms-g": "Steak", "ms-h": "Pork Chops" },
-    "Pantry & Dry Goods": { "pa-a": "Bread", "pa-b": "Pasta", "pa-c": "Rice", "pa-d": "Cereal", "pa-e": "Flour", "pa-f": "Sugar", "pa-g": "Olive Oil", "pa-h": "Canned Tomatoes", "pa-i": "Canned Beans", "pa-j": "Peanut Butter" },
-    "Snacks": { "sn-a": "Chips", "sn-b": "Crackers", "sn-c": "Pretzels", "sn-d": "Popcorn", "sn-e": "Granola Bars", "sn-f": "Nuts", "sn-g": "Cookies" },
-    "Frozen": { "fr-a": "Frozen Pizza", "fr-b": "Ice Cream", "fr-c": "Frozen Vegetables", "fr-d": "Frozen Fries", "fr-e": "Waffles" }
+    "Produce": {
+        "pr-a": "Apples", "pr-b": "Bananas", "pr-c": "Carrots", "pr-d": "Broccoli", "pr-e": "Spinach", "pr-f": "Onions", "pr-g": "Potatoes", "pr-h": "Tomatoes", "pr-i": "Lettuce", "pr-j": "Cucumbers", "pr-k": "Bell Peppers", "pr-l": "Avocado", "pr-m": "Garlic"
+    },
+    "Dairy & Eggs": {
+        "da-a": "Milk", "da-b": "Eggs", "da-c": "Cheddar Cheese", "da-d": "Mozzarella Cheese", "da-e": "Yogurt", "da-f": "Butter", "da-g": "Sour Cream", "da-h": "Cream Cheese"
+    },
+    "Meat & Seafood": {
+        "ms-a": "Chicken Breast", "ms-b": "Ground Beef", "ms-c": "Bacon", "ms-d": "Sausage", "ms-e": "Salmon", "ms-f": "Shrimp", "ms-g": "Steak", "ms-h": "Pork Chops"
+    },
+    "Pantry & Dry Goods": {
+        "pa-a": "Bread", "pa-b": "Pasta", "pa-c": "Rice", "pa-d": "Cereal", "pa-e": "Flour", "pa-f": "Sugar", "pa-g": "Olive Oil", "pa-h": "Canned Tomatoes", "pa-i": "Canned Beans", "pa-j": "Peanut Butter"
+    },
+    "Snacks": {
+        "sn-a": "Chips", "sn-b": "Crackers", "sn-c": "Pretzels", "sn-d": "Popcorn", "sn-e": "Granola Bars", "sn-f": "Nuts", "sn-g": "Cookies"
+    },
+    "Frozen": {
+        "fr-a": "Frozen Pizza", "fr-b": "Ice Cream", "fr-c": "Frozen Vegetables", "fr-d": "Frozen Fries", "fr-e": "Waffles"
+    }
 };
+
 let groceryList = {};
 
 // --- II. DOM ELEMENTS ---
@@ -58,7 +72,7 @@ function initializeApp() {
 // --- IV. CORE LOGIC & HANDLERS ---
 
 /**
- * Handles adding a new item when the user types it in manually.
+ * Handles adding an item when the user types it in manually.
  */
 function handleManualAddItem() {
     const itemNameRaw = itemInput.value.trim();
@@ -118,7 +132,7 @@ function handleListInteraction(e) {
         if (categoryGroup.querySelectorAll('.grocery-item').length === 0) {
             categoryGroup.remove();
         }
-        if (Object.keys(groceryList).every(key => groceryList[key].length === 0)) {
+        if (Object.values(groceryList).every(arr => arr.length === 0)) {
             renderList();
         }
     } else if (target.type === 'checkbox') {
@@ -172,38 +186,32 @@ function handlePdf() {
         alert("Your list is empty.");
         return;
     }
-
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const tableData = [];
         const head = [['Done', 'Item', 'Type', 'Qty', 'Price', 'Category']];
         const pageContent = function(data) {
-            // --- Start of Updated Section ---
-            // HEADER
             doc.setFontSize(10);
             doc.setTextColor(150);
             doc.setFont('helvetica', 'italic');
-            doc.text("Made with love at 124915.xyz", data.settings.margin.left, 15);
+            doc.text("made with love at 124915.xyz", data.settings.margin.left, 15);
             doc.text("Paid by/with: ____________________", doc.internal.pageSize.getWidth() - data.settings.margin.right, 15, { align: 'right' });
-
-            // FOOTER
+            
             const pageHeight = doc.internal.pageSize.getHeight();
             doc.setFont('helvetica', 'normal');
             doc.text("Renaissance Gruppe", data.settings.margin.left, pageHeight - 10);
             
             const today = new Date();
             const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            const dateWidth = doc.getTextWidth(dateStr);
-            doc.text(dateStr, doc.internal.pageSize.getWidth() - data.settings.margin.right - dateWidth, pageHeight - 10);
-            // --- End of Updated Section ---
+            doc.text(dateStr, doc.internal.pageSize.getWidth() - data.settings.margin.right, pageHeight - 10, { align: 'right' });
         };
 
         const categoryOrder = getSortedCategoryKeys();
         categoryOrder.forEach(category => {
             groceryList[category].forEach(item => {
                 const price = parseFloat(item.price);
-                const formattedPrice = !isNaN(price) ? `$${price.toFixed(2)}` : '';
+                const formattedPrice = !isNaN(price) ? `$${(price * item.qty).toFixed(2)}` : '';
                 tableData.push([item.checked ? '[X]' : '[ ]', item.name, item.type || '', item.qty, formattedPrice, category]);
             });
         });
@@ -212,7 +220,7 @@ function handlePdf() {
             head: head,
             body: tableData,
             didDrawPage: pageContent,
-            startY: 20, // Start table lower to make space for header
+            startY: 20,
             styles: { font: 'helvetica', cellPadding: 2 },
             headStyles: { fillColor: [75, 85, 99] },
             theme: 'grid'
@@ -243,30 +251,31 @@ function handleClear() {
 }
 
 /**
- * Generates and copies a shareable link to the clipboard.
+ * Generates and copies a shareable link with full item details.
  */
 function handleShare() {
-    let encodedItems = [], customItems = [];
+    if (Object.keys(groceryList).length === 0) {
+        alert("Your list is empty. Add some items to share!");
+        return;
+    }
+    const itemsToEncode = [];
     for (const category in groceryList) {
         groceryList[category].forEach(item => {
-            if (item.id.startsWith('cu-')) {
-                customItems.push(item.name);
-            } else {
-                encodedItems.push(item.id);
-            }
+            const type = item.type || ' ';
+            const price = item.price || '0';
+            const checked = item.checked ? '1' : '0';
+            const qty = item.qty || '1';
+            const id = item.id.startsWith('cu-') ? item.name : item.id;
+            itemsToEncode.push([id, type, qty, price, checked].join('|'));
         });
     }
-    const params = new URLSearchParams();
-    if (encodedItems.length > 0) params.set('i', encodedItems.join(','));
-    if (customItems.length > 0) params.set('c', customItems.join(','));
-    if (params.toString()) {
-        const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-        navigator.clipboard.writeText(shareUrl).then(() => {
-            alert('Shareable link copied to clipboard!');
-        });
-    } else {
-        alert("Your list is empty. Add some items to share!");
-    }
+    const encodedString = encodeURIComponent(itemsToEncode.join(';'));
+    const shareUrl = `${window.location.origin}${window.location.pathname}?list=${encodedString}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+        alert('Shareable link with all details copied to clipboard!');
+    }, () => {
+        alert('Failed to copy link.');
+    });
 }
 
 /**
@@ -394,7 +403,7 @@ function createCategoryElement(categoryName, items) {
  */
 function updateTotalCost() {
     const total = calculateTotalCost();
-    if (total > 0) {
+    if (total > 0 || Object.keys(groceryList).length > 0) { // Show if total is > 0 OR if there are items
         totalCostContainer.classList.remove('hidden');
         totalCostDisplay.textContent = `$${total.toFixed(2)}`;
     } else {
@@ -445,27 +454,43 @@ function loadListFromStorage() {
  */
 function loadListFromURL() {
     const params = new URLSearchParams(window.location.search);
-    const encodedItems = params.get('i');
-    const customItems = params.get('c');
-    if (!encodedItems && !customItems) return false;
-    groceryList = {};
-    if (encodedItems) {
-        encodedItems.split(',').forEach(code => {
+    const encodedList = params.get('list');
+    if (!encodedList) return false;
+    try {
+        groceryList = {};
+        const items = decodeURIComponent(encodedList).split(';');
+        items.forEach(itemString => {
+            const parts = itemString.split('|');
+            if (parts.length < 5) return;
+            const [idOrName, type, qty, price, checked] = parts;
+            const itemData = {
+                checked: checked === '1',
+                type: type.trim() === '' ? '' : type,
+                qty: parseInt(qty, 10) || 1,
+                price: price === '0' ? '' : price,
+            };
+            let found = false;
             for (const category in GROCERY_DATA) {
-                if (GROCERY_DATA[category][code]) {
-                    addItemToList(category, { id: code, name: GROCERY_DATA[category][code], checked: false, type: '', qty: 1, price: '' });
-                    return;
+                if (GROCERY_DATA[category][idOrName]) {
+                    itemData.id = idOrName;
+                    itemData.name = GROCERY_DATA[category][idOrName];
+                    addItemToList(category, itemData);
+                    found = true;
+                    break;
                 }
             }
+            if (!found) {
+                itemData.id = `cu-${Date.now()}-${idOrName}`;
+                itemData.name = idOrName;
+                addItemToList("Custom", itemData);
+            }
         });
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return true;
+    } catch (error) {
+        console.error("Failed to decode list from URL:", error);
+        return false;
     }
-    if (customItems) {
-        customItems.split(',').forEach(itemName => {
-            addItemToList("Custom", { id: `cu-${Date.now()}-${itemName}`, name: itemName, checked: false, type: '', qty: 1, price: '' });
-        });
-    }
-    window.history.replaceState({}, document.title, window.location.pathname);
-    return true;
 }
 
 /**
