@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO: Primary Title & Meta Tags -->
+    <title>Smart Grocery List Planner | Shareable & Printable Lists with Prices</title>
+    <link rel="canonical" href="https://your-grocery-app-domain.com/">
+    <meta name="description" content="A free tool to create, auto-categorize, and share your grocery shopping list with brand and price tracking. Generate a shareable link or a printable PDF in seconds.">
+    <meta name="keywords" content="grocery list, shopping list, smart grocery list, shareable grocery list, printable grocery list, grocery list generator, budget shopping">
+
+    <!-- SEO: Open Graph (for social media sharing) -->
+    <meta property="og:title" content="Smart Grocery List Planner">
+    <meta property="og:description" content="Create auto-categorized shopping lists you can share or print as a PDF.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-grocery-app-domain.com/">
+    <meta property="og:image" content="https://your-grocery-app-domain.com/social-preview.png">
+
+    <!-- SEO: Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Smart Grocery List Planner">
+    <meta name="twitter:description" content="Create auto-categorized shopping lists you can share or print as a PDF.">
+    <meta name="twitter:image" content="https://your-grocery-app-domain.com/social-preview.png">
+
+    <!-- Libraries, Stylesheets and Fonts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Main script -->
+    <script src="groceryShopping.js" defer></script>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <div class="w-full min-h-screen flex flex-col">
+        
+        <!-- Main Content Area with Sidebars -->
+        <div class="flex-grow flex justify-center p-4 lg:p-8 lg:space-x-8">
+            
+            <!-- Left Legend (Desktop Only) -->
+            <aside id="left-legend" class="hidden lg:block w-64 flex-shrink-0 space-y-4">
+                <!-- Left legend content will be injected by JS -->
+            </aside>
+
+            <!-- Main Application -->
+            <main class="w-full max-w-2xl flex-shrink-0">
+                <div class="bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8 border border-gray-700 space-y-8">
+                    <header class="text-center">
+                        <h1 class="text-3xl md:text-4xl font-bold text-white">Smart Grocery List</h1>
+                        <p class="text-gray-400 mt-2">Create, categorize, and share your shopping list instantly.</p>
+                    </header>
+                    
+                    <section>
+                        <div class="flex space-x-2">
+                            <input type="text" id="item-input" placeholder="e.g., Milk, Apples, Bread..." class="flex-grow bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-lg text-gray-200 focus:ring-2 focus:ring-indigo-500">
+                            <button id="add-item-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg transition duration-200">Add</button>
+                        </div>
+                    </section>
+
+                    <section id="list-container" class="space-y-6">
+                        <p id="empty-list-message" class="text-center text-gray-500 py-4">Your grocery list is empty. Add an item to get started!</p>
+                    </section>
+                    
+                    <!-- NEW: Total Cost Display -->
+                    <section id="total-cost-container" class="pt-6 border-t border-gray-700 flex justify-between items-center hidden">
+                        <h2 class="text-xl font-bold text-white">Estimated Total:</h2>
+                        <p id="total-cost-display" class="text-2xl font-bold text-teal-400">$0.00</p>
+                    </section>
+
+                    <section id="action-buttons" class="pt-6 border-t border-gray-700 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <button id="share-btn" class="action-btn bg-gray-600 hover:bg-gray-700">Share List</button>
+                        <button id="pdf-btn" class="action-btn bg-teal-600 hover:bg-teal-700">Download PDF</button>
+                        <button id="clear-btn" class="action-btn bg-red-700 hover:bg-red-800">Clear List</button>
+                    </section>
+                </div>
+            </main>
+
+            <!-- Right Legend (Desktop Only) -->
+            <aside id="right-legend" class="hidden lg:block w-64 flex-shrink-0 space-y-4">
+                <!-- Right legend content will be injected by JS -->
+            </aside>
+            
+        </div>
+    
+        <!-- Footer Sections -->
+        <footer class="w-full max-w-6xl mx-auto px-4 pb-8">
+            
+            <!-- Story Section -->
+            <section class="mt-12 text-center">
+                <h2 class="text-2xl font-bold text-white mb-2">Why This Tool Exists</h2>
+                <p class="text-gray-400 max-w-xl mx-auto">
+                    My partner and I were tired of disorganized shopping lists scribbled on paper. I wanted a tool that would automatically group "apples" with "bananas" and "milk" with "cheese" to make shopping trips faster. This app is the result: a smart list that organizes itself so you don't have to.
+                </p>
+            </section>
+
+            <!-- Promise Section -->
+            <section class="mt-12 text-gray-400 text-sm">
+                <h2 class="text-2xl font-bold text-white text-center mb-4">My Promise</h2>
+                <div class="grid md:grid-cols-3 gap-6 text-center">
+                    <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                        <h3 class="font-semibold text-white mb-1">Zero Logging</h3>
+                        <p>Your grocery list is your business. This tool runs entirely in your browser and never saves or sends your data anywhere.</p>
+                    </div>
+                    <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                        <h3 class="font-semibold text-white mb-1">Open Source</h3>
+                        <p>The code will be fully available on GitHub under the MIT License. Feel free to inspect, fork, or contribute to it.</p>
+                    </div>
+                    <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                        <h3 class="font-semibold text-white mb-1">Free Forever</h3>
+                        <p>This is a simple tool to solve a common problem. It's free to use, with no ads and no strings attached.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About the Creator & Support Section -->
+            <section class="mt-12 text-center">
+                <h2 class="text-2xl font-bold text-white mb-4">About the Creator</h2>
+                <div class="max-w-xl mx-auto text-gray-400 space-y-4">
+                    <p>
+                        First and foremost, I am a builder. I enjoy building things end-to-end. I got into programming in the early 2000's and have dipped in and out ever since. In 2023 I decided to pursue my passion full time and now I spend my days levelling up my knowledge breadth and depth. Someday I hope to build a parallel civilizational layer over the internet.
+                    </p>
+                    <div class="pt-4">
+                        <a href="https://coff.ee/devchthonic" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-black bg-yellow-400 hover:bg-yellow-500 transition-colors shadow-lg">
+                            <svg class="w-6 h-6 mr-3" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.9 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/></svg>
+                            Buy Me a Coffee
+                        </a>
+                    </div>
+                </div>
+            </section>
+            
+            <div class="w-full mt-12 text-center text-xs text-gray-600">
+                <p>&copy; 2025 Renaissance Gruppe. All Rights Reserved.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
