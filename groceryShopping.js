@@ -1,34 +1,31 @@
 /**
  * groceryShopping.js
  * This script handles all logic for the Smart Grocery List application.
- * It manages adding items, categorizing them, tracking type, quantity, and price,
- * and handling share/PDF/clear actions.
+ * v10: Final complete version with all features including currency support.
  */
 
 // --- I. STATE & CONFIGURATION ---
 
 const GROCERY_DATA = {
-    "Produce": {
-        "pr-a": "Apples", "pr-b": "Bananas", "pr-c": "Carrots", "pr-d": "Broccoli", "pr-e": "Spinach", "pr-f": "Onions", "pr-g": "Potatoes", "pr-h": "Tomatoes", "pr-i": "Lettuce", "pr-j": "Cucumbers", "pr-k": "Bell Peppers", "pr-l": "Avocado", "pr-m": "Garlic"
-    },
-    "Dairy & Eggs": {
-        "da-a": "Milk", "da-b": "Eggs", "da-c": "Cheddar Cheese", "da-d": "Mozzarella Cheese", "da-e": "Yogurt", "da-f": "Butter", "da-g": "Sour Cream", "da-h": "Cream Cheese"
-    },
-    "Meat & Seafood": {
-        "ms-a": "Chicken Breast", "ms-b": "Ground Beef", "ms-c": "Bacon", "ms-d": "Sausage", "ms-e": "Salmon", "ms-f": "Shrimp", "ms-g": "Steak", "ms-h": "Pork Chops"
-    },
-    "Pantry & Dry Goods": {
-        "pa-a": "Bread", "pa-b": "Pasta", "pa-c": "Rice", "pa-d": "Cereal", "pa-e": "Flour", "pa-f": "Sugar", "pa-g": "Olive Oil", "pa-h": "Canned Tomatoes", "pa-i": "Canned Beans", "pa-j": "Peanut Butter"
-    },
-    "Snacks": {
-        "sn-a": "Chips", "sn-b": "Crackers", "sn-c": "Pretzels", "sn-d": "Popcorn", "sn-e": "Granola Bars", "sn-f": "Nuts", "sn-g": "Cookies"
-    },
-    "Frozen": {
-        "fr-a": "Frozen Pizza", "fr-b": "Ice Cream", "fr-c": "Frozen Vegetables", "fr-d": "Frozen Fries", "fr-e": "Waffles"
-    }
+    "Produce": { "pr-a": "Apples", "pr-b": "Bananas", "pr-c": "Carrots", "pr-d": "Broccoli", "pr-e": "Spinach", "pr-f": "Onions", "pr-g": "Potatoes", "pr-h": "Tomatoes", "pr-i": "Lettuce", "pr-j": "Cucumbers", "pr-k": "Bell Peppers", "pr-l": "Avocado", "pr-m": "Garlic" },
+    "Dairy & Eggs": { "da-a": "Milk", "da-b": "Eggs", "da-c": "Cheddar Cheese", "da-d": "Mozzarella Cheese", "da-e": "Yogurt", "da-f": "Butter", "da-g": "Sour Cream", "da-h": "Cream Cheese" },
+    "Meat & Seafood": { "ms-a": "Chicken Breast", "ms-b": "Ground Beef", "ms-c": "Bacon", "ms-d": "Sausage", "ms-e": "Salmon", "ms-f": "Shrimp", "ms-g": "Steak", "ms-h": "Pork Chops" },
+    "Pantry & Dry Goods": { "pa-a": "Bread", "pa-b": "Pasta", "pa-c": "Rice", "pa-d": "Cereal", "pa-e": "Flour", "pa-f": "Sugar", "pa-g": "Olive Oil", "pa-h": "Canned Tomatoes", "pa-i": "Canned Beans", "pa-j": "Peanut Butter" },
+    "Snacks": { "sn-a": "Chips", "sn-b": "Crackers", "sn-c": "Pretzels", "sn-d": "Popcorn", "sn-e": "Granola Bars", "sn-f": "Nuts", "sn-g": "Cookies" },
+    "Frozen": { "fr-a": "Frozen Pizza", "fr-b": "Ice Cream", "fr-c": "Frozen Vegetables", "fr-d": "Frozen Fries", "fr-e": "Waffles" }
 };
 
 let groceryList = {};
+let currentCurrency = 'USD'; // Default currency
+
+const CURRENCIES = {
+    'USD': { locale: 'en-US', symbol: '$' },
+    'CAD': { locale: 'en-CA', symbol: 'C$' },
+    'EUR': { locale: 'de-DE', symbol: '€' },
+    'GBP': { locale: 'en-GB', symbol: '£' },
+    'JPY': { locale: 'ja-JP', symbol: '¥' },
+    'INR': { locale: 'en-IN', symbol: '₹' }
+};
 
 // --- II. DOM ELEMENTS ---
 const itemInput = document.getElementById('item-input');
@@ -37,6 +34,7 @@ const listContainer = document.getElementById('list-container');
 const emptyListMessage = document.getElementById('empty-list-message');
 const totalCostContainer = document.getElementById('total-cost-container');
 const totalCostDisplay = document.getElementById('total-cost-display');
+const currencySelect = document.getElementById('currency-select');
 const shareBtn = document.getElementById('share-btn');
 const pdfBtn = document.getElementById('pdf-btn');
 const clearBtn = document.getElementById('clear-btn');
@@ -47,23 +45,23 @@ const rightLegend = document.getElementById('right-legend');
 document.addEventListener('DOMContentLoaded', initializeApp);
 
 /**
- * Sets up the application: populates legends, adds event listeners, and loads data.
+ * Sets up the application: populates UI, adds event listeners, and loads data.
  */
 function initializeApp() {
     setupLegends();
+    populateCurrencyDropdown();
     if (!loadListFromURL()) {
         loadListFromStorage();
     }
     renderList();
     addItemBtn.addEventListener('click', handleManualAddItem);
-    itemInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handleManualAddItem();
-    });
+    itemInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleManualAddItem(); });
     listContainer.addEventListener('click', handleListInteraction);
     listContainer.addEventListener('input', handleItemDetailChange);
     [leftLegend, rightLegend].forEach(legend => {
         legend.addEventListener('click', handleLegendClick);
     });
+    currencySelect.addEventListener('change', handleCurrencyChange);
     shareBtn.addEventListener('click', handleShare);
     pdfBtn.addEventListener('click', handlePdf);
     clearBtn.addEventListener('click', handleClear);
@@ -72,7 +70,7 @@ function initializeApp() {
 // --- IV. CORE LOGIC & HANDLERS ---
 
 /**
- * Handles adding an item when the user types it in manually.
+ * Handles adding a new item from the manual input field.
  */
 function handleManualAddItem() {
     const itemNameRaw = itemInput.value.trim();
@@ -99,7 +97,7 @@ function handleManualAddItem() {
 }
 
 /**
- * Handles adding an item when a user clicks a button in the legend.
+ * Handles adding an item from a legend button click.
  * @param {Event} e The click event.
  */
 function handleLegendClick(e) {
@@ -119,7 +117,6 @@ function handleListInteraction(e) {
     const target = e.target;
     const itemElement = target.closest('.grocery-item');
     if (!itemElement) return;
-
     const itemId = itemElement.dataset.id;
     const categoryName = itemElement.closest('.category-group').dataset.category;
     const itemIndex = groceryList[categoryName].findIndex(item => item.id === itemId);
@@ -149,18 +146,16 @@ function handleListInteraction(e) {
 }
 
 /**
- * Handles changes to the type, quantity, and price input fields.
+ * Handles changes to the type, quantity, and price inputs.
  * @param {Event} e The input event.
  */
 function handleItemDetailChange(e) {
     const target = e.target;
     if (!target.matches('.type-input, .qty-input, .price-input')) return;
-
     const itemElement = target.closest('.grocery-item');
     const itemId = itemElement.dataset.id;
     const category = itemElement.closest('.category-group').dataset.category;
     const item = groceryList[category].find(item => item.id === itemId);
-
     if (item) {
         if (target.classList.contains('type-input')) {
             item.type = target.value;
@@ -175,7 +170,17 @@ function handleItemDetailChange(e) {
 }
 
 /**
- * Generates and downloads a PDF of the list with custom branding.
+ * Handles changing the currency and updates the UI.
+ * @param {Event} e The change event from the currency selector.
+ */
+function handleCurrencyChange(e) {
+    currentCurrency = e.target.value;
+    saveListToStorage();
+    updateTotalCost();
+}
+
+/**
+ * Generates and downloads a PDF of the list.
  */
 function handlePdf() {
     if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF.API.autoTable === 'undefined') {
@@ -197,11 +202,9 @@ function handlePdf() {
             doc.setFont('helvetica', 'italic');
             doc.text("made with love at 124915.xyz", data.settings.margin.left, 15);
             doc.text("Paid by/with: ____________________", doc.internal.pageSize.getWidth() - data.settings.margin.right, 15, { align: 'right' });
-            
             const pageHeight = doc.internal.pageSize.getHeight();
             doc.setFont('helvetica', 'normal');
             doc.text("Renaissance Gruppe", data.settings.margin.left, pageHeight - 10);
-            
             const today = new Date();
             const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             doc.text(dateStr, doc.internal.pageSize.getWidth() - data.settings.margin.right, pageHeight - 10, { align: 'right' });
@@ -211,11 +214,10 @@ function handlePdf() {
         categoryOrder.forEach(category => {
             groceryList[category].forEach(item => {
                 const price = parseFloat(item.price);
-                const formattedPrice = !isNaN(price) ? `$${(price * item.qty).toFixed(2)}` : '';
+                const formattedPrice = !isNaN(price) ? formatCurrency(price * item.qty) : '';
                 tableData.push([item.checked ? '[X]' : '[ ]', item.name, item.type || '', item.qty, formattedPrice, category]);
             });
         });
-
         doc.autoTable({
             head: head,
             body: tableData,
@@ -225,13 +227,10 @@ function handlePdf() {
             headStyles: { fillColor: [75, 85, 99] },
             theme: 'grid'
         });
-        
         const finalY = doc.lastAutoTable.finalY;
-        const totalCost = calculateTotalCost();
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text(`Estimated Total: $${totalCost.toFixed(2)}`, 14, finalY + 10);
-
+        doc.text(`Estimated Total: ${formatCurrency(calculateTotalCost())}`, 14, finalY + 10);
         doc.save('grocery-list.pdf');
     } catch (error) {
         console.error("Failed to generate PDF:", error);
@@ -251,7 +250,7 @@ function handleClear() {
 }
 
 /**
- * Generates and copies a shareable link with full item details.
+ * Generates and copies a shareable link with full item details and currency.
  */
 function handleShare() {
     if (Object.keys(groceryList).length === 0) {
@@ -269,12 +268,13 @@ function handleShare() {
             itemsToEncode.push([id, type, qty, price, checked].join('|'));
         });
     }
-    const encodedString = encodeURIComponent(itemsToEncode.join(';'));
-    const shareUrl = `${window.location.origin}${window.location.pathname}?list=${encodedString}`;
+    const params = new URLSearchParams();
+    params.set('list', encodeURIComponent(itemsToEncode.join(';')));
+    params.set('curr', currentCurrency);
+    
+    const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
         alert('Shareable link with all details copied to clipboard!');
-    }, () => {
-        alert('Failed to copy link.');
     });
 }
 
@@ -378,14 +378,14 @@ function createCategoryElement(categoryName, items) {
         const qtyInput = document.createElement('input');
         qtyInput.type = 'number';
         qtyInput.placeholder = 'Qty';
-        qtyInput.className = 'detail-input qty-input w-16 text-center';
+        qtyInput.className = 'detail-input qty-input';
         qtyInput.value = item.qty || 1;
         qtyInput.min = '1';
 
         const priceInput = document.createElement('input');
         priceInput.type = 'number';
         priceInput.placeholder = 'Price';
-        priceInput.className = 'detail-input price-input w-24';
+        priceInput.className = 'detail-input price-input';
         priceInput.value = item.price || '';
         priceInput.step = '0.01';
         priceInput.min = '0';
@@ -403,9 +403,9 @@ function createCategoryElement(categoryName, items) {
  */
 function updateTotalCost() {
     const total = calculateTotalCost();
-    if (total > 0 || Object.keys(groceryList).length > 0) { // Show if total is > 0 OR if there are items
+    if (Object.keys(groceryList).length > 0) {
         totalCostContainer.classList.remove('hidden');
-        totalCostDisplay.textContent = `$${total.toFixed(2)}`;
+        totalCostDisplay.textContent = formatCurrency(total);
     } else {
         totalCostContainer.classList.add('hidden');
     }
@@ -429,36 +429,53 @@ function calculateTotalCost() {
     return total;
 }
 
+
 // --- VI. LOCAL STORAGE, URL HANDLING, & OTHER HELPERS ---
 
 /**
- * Saves the current list to localStorage.
+ * Saves the current list and currency to localStorage.
  */
 function saveListToStorage() {
-    localStorage.setItem('smartGroceryList', JSON.stringify(groceryList));
+    const appState = {
+        list: groceryList,
+        currency: currentCurrency
+    };
+    localStorage.setItem('smartGroceryListState', JSON.stringify(appState));
 }
 
 /**
- * Loads the list from localStorage.
+ * Loads the list and currency from localStorage.
  */
 function loadListFromStorage() {
-    const savedList = localStorage.getItem('smartGroceryList');
-    if (savedList) {
-        groceryList = JSON.parse(savedList);
+    const savedState = localStorage.getItem('smartGroceryListState');
+    if (savedState) {
+        const appState = JSON.parse(savedState);
+        groceryList = appState.list || {};
+        currentCurrency = appState.currency || 'USD';
+        currencySelect.value = currentCurrency;
     }
 }
 
 /**
- * Loads the list from URL parameters.
- * @returns {boolean} True if list was loaded.
+ * Loads the list and currency from URL parameters.
+ * @returns {boolean} True if state was loaded from the URL.
  */
 function loadListFromURL() {
     const params = new URLSearchParams(window.location.search);
     const encodedList = params.get('list');
+    const currency = params.get('curr');
+    
     if (!encodedList) return false;
+    
+    if (currency && CURRENCIES[currency]) {
+        currentCurrency = currency;
+        currencySelect.value = currentCurrency;
+    }
+
     try {
         groceryList = {};
         const items = decodeURIComponent(encodedList).split(';');
+
         items.forEach(itemString => {
             const parts = itemString.split('|');
             if (parts.length < 5) return;
@@ -485,12 +502,26 @@ function loadListFromURL() {
                 addItemToList("Custom", itemData);
             }
         });
+
         window.history.replaceState({}, document.title, window.location.pathname);
         return true;
     } catch (error) {
         console.error("Failed to decode list from URL:", error);
         return false;
     }
+}
+
+/**
+ * Populates the currency selector dropdown.
+ */
+function populateCurrencyDropdown() {
+    for (const code in CURRENCIES) {
+        const option = document.createElement('option');
+        option.value = code;
+        option.textContent = `${code} (${CURRENCIES[code].symbol})`;
+        currencySelect.appendChild(option);
+    }
+    currencySelect.value = currentCurrency;
 }
 
 /**
@@ -546,4 +577,17 @@ function getSortedCategoryKeys() {
         sortedKeys.push("Custom");
     }
     return sortedKeys;
+}
+
+/**
+ * Formats a number into a string based on the current currency.
+ * @param {number} amount - The number to format.
+ * @returns {string} The formatted currency string.
+ */
+function formatCurrency(amount) {
+    const options = CURRENCIES[currentCurrency] || CURRENCIES['USD'];
+    return new Intl.NumberFormat(options.locale, {
+        style: 'currency',
+        currency: currentCurrency,
+    }).format(amount || 0);
 }
